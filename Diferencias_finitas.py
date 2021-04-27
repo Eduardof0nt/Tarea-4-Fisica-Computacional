@@ -28,7 +28,7 @@ def GaussSeidel(mat, func, prec, maxIter, params):
     #Se inicia el contador de iteraciones
     iters = 0
     
-    #Se inicia la variable que guarda si se llegó a la presición máxima
+    #Se inicia la variable que guarda si se llegó a la precisión máxima
     maxPrec = False
     
     #Guarda la precisión para retornarla al final de la ejecución
