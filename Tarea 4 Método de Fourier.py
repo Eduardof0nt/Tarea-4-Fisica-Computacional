@@ -37,7 +37,8 @@ def E_m(longitud,m):
     longitud : representa la longitud máxima en x, pues es la frontera
     
     m : Representa el parámetro asociado al número de términos que tendrá la serie de Fourier, pues este
-    coeficiente se debe calcular para cada iteración en particular
+    coeficiente se debe calcular para cada iteración en particular. Cuando m es par, el coeficiente se anula,
+    por lo que se opta por solo calcularlo para m impares
 
    Salida de la función
     -------
@@ -57,7 +58,7 @@ def E_m(longitud,m):
     return valor_em
 
 #Se crea la función que calcula la aproximación del valor de la densidad de la sustancia en cada punto x a través del tiempo
-def Aprox_pXT(x, t, longitud, n):
+def Aprox_pXT(x, t, longitud, nt):
     '''
     Parámetros
     ----------
@@ -67,23 +68,32 @@ def Aprox_pXT(x, t, longitud, n):
     
     longitud : lado del área donde se difumina la sustancia
     
-    n : número de términos que tendrá el cálculo del potencial (debe ser
-           mayor o igual que 1)
+    nt : número de términos que tendrá el cálculo de la densidad
     Salida de la función
     -------
     valorAprox_pXT : valor de la densidad de la sustancia en el punto (x, t)
-
+    error: aproximación de la precisión mínima obtenida
     '''
     # Se inicializa el valor de la densidad a calcular
     valorAprox_pXT = 0
 
     # Se realiza la sumatoria que corresponde con el número de términos dado
-    for i in range(1, n+1):
+    for n in range(0, nt):
+        i=2*n+1 #Se calcula solo para los términos impares, pues para los pares se anula e_m
         
         #Se calcula la aproximación para cada iteración, añadiéndola en la variable establecida
         valorAprox_pXT += (E_m(longitud,i))*np.sin(i*np.pi*x/longitud)*np.exp(-(0.5*i**2*np.pi**2)/(longitud**2)*t)
+        
+        #Se crea una condición para calcular una aproximación de la precisión
+        if i==2*(nt-1)+1:
+            #Tomando el error como la diferencia entre la aproximación para n términos y n-1 términos, la diferencia corresponde
+            #solo al último término de la aproximación para n términos
+            dif=(E_m(longitud,i))*np.sin(i*np.pi*x/longitud)*np.exp(-(0.5*i**2*np.pi**2)/(longitud**2)*t)
+            error=np.max(dif) #Se obtiene error máximo con la función de NumPy np.max del arreglo de diferencias
+        else:
+            pass
 
-    return valorAprox_pXT
+    return valorAprox_pXT , error  #Se retornan la aproximación y el error
 
 #Se define la longitud de frontera establecida. No se establece límite para el tiempo, por lo que este queda
 # a disposición del usuario para observar el comportamiento a través del tiempo
@@ -92,7 +102,7 @@ longitudespacial = 10
 limittemporal = 20
 
 # Se indica el número de términos para el cálculo de la aproximación del densidad de la sustancia
-numeroterminos = 150
+numeroterminos = 75
 
 # Se define la malla de puntos para evaluar la densidad de la sustancia
 puntosmalla = 30
@@ -100,10 +110,12 @@ x = np.linspace(0, longitudespacial, puntosmalla)
 t = np.linspace(0, limittemporal , puntosmalla)
 X, T = np.meshgrid(x, t)
 
-
-
 # Se calcula el valor aproximado de la densidad de la sustancia en los puntos de  la malla y se asignan al eje Z
-Z = Aprox_pXT(X, T, longitudespacial, numeroterminos)
+Z = Aprox_pXT(X, T, longitudespacial, numeroterminos)[0]
+
+#Se le avisa al usuario la precisión mínima obtenida
+precisión=Aprox_pXT(X, T, longitudespacial, numeroterminos)[1]
+print("Se obtuvo un error de ", precisión)
 
 fig = plt.figure()
 ax = plt.axes(projection='3d')
