@@ -11,7 +11,7 @@ Se define la función pxt(m,n,mat,params) donde:
 def pxt(m,n,mat,params):
     D = params['D']
     delta = params['delta']
-    return (D*(mat[m,n-1]+mat[m,n+1])-delta*mat[m+1,n])/(2*D-delta)
+    return (D*(mat[m+1,n]+mat[m-1,n])+delta*mat[m,n-1])/(2*D+delta)
 
 '''
 Se define la función GaussSeidel(mat, func, prec, maxIter, params) donde:
@@ -59,10 +59,11 @@ def GaussSeidel(mat, func, prec, maxIter, params):
 #Inicio del programa
 
 #Se definen los parámetros para el cálculo que se desea realizar
-params = {'D':0.5, 'delta': 0.1, 'Lx': 10, 'A': 2, 'x0': 5, 'l':1.5}
+params = {'D':0.5, 'puntosmalla': 100, 'Lx': 10, 'A': 2, 'x0': 5, 'l':1.5}
 
-#Se define la malla de puntos
-puntosmalla = int(params['Lx']//params['delta'])
+#Se define la malla de puntos y se calcula delta, que el la longitud dividida sobre la cantidad de puntos en la malla
+puntosmalla = params['puntosmalla']
+params['delta'] = params['Lx']/params['puntosmalla']
 x = np.linspace(0, params['Lx'], puntosmalla)
 t = np.linspace(0, params['Lx'], puntosmalla)
 X, T = np.meshgrid(x, t)
@@ -77,7 +78,7 @@ for i in range(0, puntosmalla):
     pxti[i,0] = params['A']*np.exp(-((params['delta']*i - params['x0'])**2)/params['l'])
 
 #Se realiza el cálculo
-(Z,prec,iters) = GaussSeidel(pxti, pxt, 0.0000000001, 1000, params)
+(Z,prec,iters) = GaussSeidel(pxti, pxt, 0.000001, 1000, params)
 
 #Se notifica al usuario sobre la precisión y el número de iteraciones
 print('Precisión alcanzada:{0}\n Número de iteraciones:{1}'.format(prec,iters))
